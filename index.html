@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+          name="viewport"/>
+    <style>
+        html,body{
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+<canvas id="canvas" height="300">
+    <p>你的浏览器不支持Canvas</p>
+</canvas>
+ <!-- 目前逻辑没去写 -->
+<p style="text-align: center" id="p">请输入密码</p>
+<p style="text-align: center"><button>重置密码</button></p>
+
+<script type=text/javascript>
+let canvas = document.getElementById('canvas');
+let c = canvas.getContext('2d');
+let p = document.getElementById('p');
+let pointArr = [];  // 圆心坐标点
+let index = [];  // 密码数组
+let only = true;
+
+canvas.width = document.documentElement.clientWidth;
+
+drawRa();
+
+canvas.addEventListener('touchmove', function (e) {
+    let x = e.touches[0].clientX;
+    let y = e.touches[0].clientY;
+    pointArr.forEach((val, ind)=>{
+        if (isIn(val.x, val.y, 25, x, y) && val.flag === 0){
+            index.push(ind);
+            drawR(val.x, val.y, 10, x, y);
+            val.flag = 1;
+        }
+    });
+    if (index.length !== 0){
+        c.clearRect(0, 0, canvas.width, 300);
+        c.beginPath();
+        c.moveTo(pointArr[index[0]].x, pointArr[index[0]].y);
+        for (let l = 1; l < index.length; l++){
+            c.lineTo(pointArr[index[l]].x, pointArr[index[l]].y)
+        }
+        c.lineTo(x, y);
+        c.lineWidth = '10';
+        c.strokeStyle = '#627eed';
+        c.lineJoin = "round";
+        c.lineCap = "round";
+        c.stroke();
+        c.lineWidth = '1';
+        clearR(index);
+        drawRa();
+        drawSmallR(index);
+    }
+},false);
+
+canvas.addEventListener('touchend', function (e) {
+    alert('密码为: ' + index.join('->'))
+},false);
+
+// 绘制9个圆
+function drawRa(){
+    for (let i = 0; i < 3; i++){
+        for (let j = 0; j < 3; j++){
+            let point = {
+                x: canvas.width/4*(i+1),
+                y: 85*(j+1),
+                flag: 0
+            };
+            c.beginPath();
+            c.arc(point.x, point.y, 25, 0, Math.PI*2);
+            c.strokeStyle = '#627eed';
+            c.strokeWidth = '3px';
+            c.stroke();
+            c.closePath();
+            c.save();
+            if(only){
+                pointArr.push(point)
+            }
+        }
+    }
+    only = false
+}
+// 在圆内吗
+function isIn(x0, y0, r0, x, y){
+  let r = Math.sqrt(Math.pow(x - x0, 2) + Math.pow(y - y0, 2));
+  return r < r0;
+}
+// 绘制小实圆
+function drawR(x0, y0 , r0, x, y) {
+    c.beginPath();
+    c.arc(x0, y0, r0, 0, Math.PI*2);
+    c.fillStyle = '#627eed';
+    c.fill();
+    c.closePath();
+}
+// 绘制多个小实圆
+function drawSmallR(index) {
+    index.forEach((val)=>{
+        c.beginPath();
+        c.arc(pointArr[val].x, pointArr[val].y, 10, 0, Math.PI*2);
+        c.fillStyle = '#627eed';
+        c.fill();
+        c.closePath();
+    });
+}
+//填充圆内
+function clearR() {
+    index.forEach((val)=>{
+        c.beginPath();
+        c.arc(pointArr[val].x, pointArr[val].y, 25, 0, Math.PI*2);
+        c.fillStyle = 'white';
+        c.fill();
+        c.closePath();
+    });
+}
+</script>
+</body>
+</html>
